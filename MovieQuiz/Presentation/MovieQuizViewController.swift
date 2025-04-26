@@ -24,6 +24,8 @@ final class MovieQuizViewController: UIViewController {
     @IBOutlet private var counterLabel: UILabel!
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
+    @IBOutlet private var noButton: UIButton!
+    @IBOutlet private var yesButton: UIButton!
     
     // MARK: - Private Properties
     private let questions: [QuizQuestion] = [
@@ -72,12 +74,12 @@ final class MovieQuizViewController: UIViewController {
     // MARK: - IBAction
     @IBAction private func yesButtonClicker(_ sender: Any) {
         let currentQuestion = questions[currentQuestionIndex]
-        let givenAnswer = false
+        let givenAnswer = true
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     @IBAction private func noButtonClicker(_ sender: Any) {
         let currentQuestion = questions[currentQuestionIndex]
-        let givenAnswer = true
+        let givenAnswer = false
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
@@ -136,14 +138,22 @@ final class MovieQuizViewController: UIViewController {
             correctAnswer += 1
         }
         
+        setButtonsEnabled(false)
+        
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.setButtonsEnabled(true)
             self.showNextQuestionOrResults()
             self.imageView.layer.borderWidth = 0
         }
+    }
+    
+    private func setButtonsEnabled(_ isEnabled: Bool) {
+        noButton.isEnabled = isEnabled
+        yesButton.isEnabled = isEnabled
     }
 }
 
