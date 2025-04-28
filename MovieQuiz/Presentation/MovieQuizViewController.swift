@@ -69,7 +69,7 @@ final class MovieQuizViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        fonts()
+        setupFonts()
         show(quiz: convert(model: questions[currentQuestionIndex]))
     }
     
@@ -159,7 +159,7 @@ final class MovieQuizViewController: UIViewController {
         yesButton.isEnabled = isEnabled
     }
     
-    private func fonts() {
+    private func setupFonts() {
         textLabel.font = UIFont(name: "YSDisplay-Bold", size: 23.0)
         questionTitleLabel.font = UIFont(name: "YSDisplay-Medium", size: 20.0)
         counterLabel.font = UIFont(name: "YSDisplay-Medium", size: 20.0)
