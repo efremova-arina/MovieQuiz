@@ -17,6 +17,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol = QuestionFactory()
     private var currentQuestion: QuizQuestion?
+    private lazy var alertPresenter = AlertPresenter(viewController: self)
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -27,9 +28,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         self.questionFactory = questionFactory
         
         setupFonts()
-        
-        questionFactory.requestNextQuestion()
 
+        questionFactory.requestNextQuestion()
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -79,34 +79,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         counterLabel.text = step.questionNumber
     }
     
-    private func show(quiz result: QuizResultsViewModel) {
-        let alert = UIAlertController(
-            title: result.title,
-            message: result.text,
-            preferredStyle: .alert)
-        
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-            guard let self = self else { return }
-            self.currentQuestionIndex = 0
-            self.correctAnswer = 0
-            
-            questionFactory.requestNextQuestion()
-        }
-        
-        alert.addAction(action)
-        self.present(alert, animated: true, completion: nil)
-    }
-    
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
             let text = correctAnswer == questionsAmount ?
             "Поздравляем! Вы ответили на 10 из 10!" :
             "Вы ответили на \(correctAnswer) из 10, попробуйте ещё раз!"
-            let viewModel = QuizResultsViewModel(
+            let alertModel = AlertModel(
                 title: "Этот раунд окончен!",
-                text: text,
-                buttonText: "Сыграть ещё раз")
-            show(quiz: viewModel)
+                message: text,
+                buttonText: "Сыграть ещё раз",
+                completion: { [weak self] in
+                    self?.startNewGame()
+                }
+            )
+            alertPresenter.show(quiz: alertModel)
         } else {
             currentQuestionIndex += 1
 
@@ -136,6 +122,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private func setButtonsEnabled(_ isEnabled: Bool) {
         noButton.isEnabled = isEnabled
         yesButton.isEnabled = isEnabled
+    }
+    
+    private func startNewGame() {
+        currentQuestionIndex = 0
+        correctAnswer = 0
+        
+        questionFactory.requestNextQuestion()
     }
     
     private func setupFonts() {
