@@ -18,6 +18,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var questionFactory: QuestionFactoryProtocol = QuestionFactory()
     private var currentQuestion: QuizQuestion?
     private lazy var alertPresenter = AlertPresenter(viewController: self)
+    private let statisticService: StatisticServiceProtocol = StatisticService()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -81,12 +82,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
-            let text = correctAnswer == questionsAmount ?
-            "Поздравляем! Вы ответили на 10 из 10!" :
-            "Вы ответили на \(correctAnswer) из 10, попробуйте ещё раз!"
+            
+            statisticService.store(correct: correctAnswer, total: questionsAmount)
+            
             let alertModel = AlertModel(
                 title: "Этот раунд окончен!",
-                message: text,
+                message: makeResultMessage(),
                 buttonText: "Сыграть ещё раз",
                 completion: { [weak self] in
                     self?.startNewGame()
@@ -137,5 +138,19 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         counterLabel.font = UIFont(name: "YSDisplay-Medium", size: 20.0)
         noButton.titleLabel?.font = UIFont(name: "YSDisplay-Medium", size: 20.0)
         yesButton.titleLabel?.font = UIFont(name: "YSDisplay-Medium", size: 20.0)
+    }
+    
+    private func makeResultMessage() -> String {
+        let currentResult = "Ваш результат: \(correctAnswer)/10"
+        let gamesCount = statisticService.gamesCount
+        let bestGame = statisticService.bestGame
+        let totalAccuracy = statisticService.totalAccuracy
+        
+        return """
+            \(currentResult)
+            Количество сыгранных квизов: \(gamesCount)
+            Рекорд: \(bestGame.correct)/10 (\(bestGame.date.dateTimeString))
+            Средняя точность: \(String(format: "%.2f", totalAccuracy))%
+            """
     }
 }
